@@ -18,17 +18,18 @@
 | 14 | T4 | `feat/t4-api-auth` | [PR #14](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/14) | 🔄 ABERTA | 2026-02-26 | `0efbbaf` |
 | 15 | T5 | `feat/t5-autonomous-form` | [PR #15](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/15) | 🔄 ABERTA | 2026-02-26 | `a914419` |
 | 16 | T6 | `feat/t6-clinic-form` | [PR #16](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/16) | 🔄 ABERTA | 2026-02-26 | `8fdc9e2` |
-| - | T7+ | ... | - | ⏳ PENDENTE | - | - |
+| 17 | T7 | `feat/t7-update-auth-autonomo` | [PR #17](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/17) | 🔄 ABERTA | 2026-02-26 | `1314f9d` |
+| - | T8+ | ... | - | ⏳ PENDENTE | - | - |
 
 ---
 
 ## Resumo
 
 - **Total de Tasks:** 17
-- **PRs Criadas:** 6/17 (35.3%)
+- **PRs Criadas:** 7/17 (41.2%)
 - **PRs Merged:** 1 (T1 - 5.9%)
-- **PRs Abertas:** 5 (T2-T6 - 29.4%)
-- **PRs Pendentes:** 11/17 (64.7%)
+- **PRs Abertas:** 6 (T2-T7 - 35.3%)
+- **PRs Pendentes:** 10/17 (58.8%)
 
 ---
 
@@ -48,9 +49,11 @@
 
 ## Próximas Tasks
 
-- T2: ✅ PR aberta (aguardando review)
-- T3-T6: 📋 Prontos para implementação
-- T7+: 📋 Aguardando conclusão de T6
+- T2-T7: ✅ PRs abertas (aguardando review)
+- T8: 📋 Atualizar /auth/register/clinica (pronto para começar)
+- T9-T11: 📋 Backend unit tests (aguardando T7-T8)
+- T12-T13: 📋 Frontend payload fixes (prontos para começar após T3-T6)
+- T14-T17: 📋 Frontend tests + E2E (aguardando T12-T13)
 
 ---
 
