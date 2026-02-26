@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "git-workflow": {
+      "source": "bobmatnyc/claude-mpm-skills",
+      "sourceType": "github",
+      "computedHash": "b4ce8119ffb8ef5ddff8bc339849abd668ccda8cd2a51ac70dbda5700a64bbb5"
+    }
+  }
+}
