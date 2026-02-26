@@ -54,6 +54,7 @@ export interface ProfessionalInfo {
   specialty: string;
   registerNumber?: string;
   registerType?: 'CRM' | 'CRP' | 'CREFITO' | 'OUTRO';
+  registerUf?: string;
 }
 
 export interface Invite {

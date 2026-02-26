@@ -12,7 +12,7 @@ import {
   transformClinicForm,
   AutonomousFormData,
   ClinicFormData,
-} from "../mappers/registration";
+} from "../mappers/registration.js";
 
 /**
  * API response for registration endpoints

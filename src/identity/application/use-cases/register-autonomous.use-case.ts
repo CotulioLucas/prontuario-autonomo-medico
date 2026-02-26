@@ -3,7 +3,7 @@
  * @see US-BE-F01-02, DR-IA-1, DR-IA-2, DR-CO-3
  */
 
-import type { Tenant, User, ProfessionalInfo } from '../../domain/entities.js';
+import type { Tenant, User, ProfessionalInfo, Address } from '../../domain/entities.js';
 import type { TenantRepository, UserRepository, ConsentRepository, EmailConfirmationRepository } from '../../domain/ports.js';
 import {
   EmailAlreadyExistsError,
@@ -18,6 +18,7 @@ export interface RegisterAutonomousInput {
   cpf: string;
   password: string;
   professionalInfo: ProfessionalInfo;
+  address: Address;
   lgpdConsentVersion: string;
 }
 
@@ -73,6 +74,7 @@ export class RegisterAutonomousUseCase {
       document: input.cpf,
       email: input.email,
       phone: input.phone,
+      address: input.address,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
