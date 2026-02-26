@@ -188,35 +188,8 @@ export interface ClinicRegistrationPayload {
 export function transformAutonomousForm(
   formData: AutonomousFormData
 ): AutonomousRegistrationPayload {
-  // Build address object, omitting complement if empty
-  const addressPayload: AutonomousRegistrationPayload["address"] = {
-    street: formData.endereco.rua,
-    number: formData.endereco.numero,
-    neighborhood: formData.endereco.bairro,
-    city: formData.endereco.cidade,
-    state: formData.endereco.uf,
-    zipCode: formData.endereco.cep,
-  };
-
-  // Include complement only if it has a value
-  if (formData.endereco.complemento && formData.endereco.complemento.trim()) {
-    addressPayload.complement = formData.endereco.complemento;
-  }
-
-  return {
-    name: formData.nome,
-    email: formData.email,
-    phone: formData.telefone,
-    password: formData.senha,
-    professionalInfo: {
-      specialty: formData.tipoProfissional,
-      registerType: formData.conselho.toUpperCase(),
-      registerNumber: formData.numeroRegistro,
-      registerUf: formData.ufRegistro,
-    },
-    address: addressPayload,
-    lgpdConsentVersion: "1.0",
-  };
+  // To be implemented in T2
+  throw new Error("transformAutonomousForm not yet implemented");
 }
 
 /**
