@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+dist
+**/dist
+.next
+**/.next
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+.cursor
+.claude
+.agent
+.agents
+
+# Tests
+tests
+**/tests
+coverage
+.nyc_output
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+*.tsbuildinfo
+.turbo
+
+# Frontend (não copiar no build do backend)
+frontend/
+
+# Prisma generated
+.prisma

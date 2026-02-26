@@ -1,0 +1,8 @@
+export { prisma } from './client.js'
+export { PrismaTenantRepository } from './tenant.repository.js'
+export { PrismaUserRepository } from './user.repository.js'
+export { PrismaSessionRepository } from './session.repository.js'
+export { PrismaInviteRepository } from './invite.repository.js'
+export { PrismaConsentRepository } from './consent.repository.js'
+export { PrismaEmailConfirmationRepository } from './email-confirmation.repository.js'
+export { PrismaPasswordResetRepository } from './password-reset.repository.js'

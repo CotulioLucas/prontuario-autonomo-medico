@@ -1,0 +1,428 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// IDENTITY CONTEXT (F01 - Autenticacao e Acesso)
+// ============================================================================
+
+enum TenantType {
+  AUTONOMOUS
+  CLINIC
+}
+
+enum UserRole {
+  ADMIN
+  PROFESSIONAL
+  RECEPTIONIST
+  FINANCIAL
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_CONFIRMATION
+}
+
+model Tenant {
+  id        String      @id @default(cuid())
+  type      TenantType
+  name      String
+  document  String      @unique // CPF para autonomo, CNPJ para clinica
+  email     String
+  phone     String?
+  address   Address?
+  logoUrl   String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  users     User[]
+  invites   Invite[]
+  consents  Consent[]
+
+  @@index([id])
+  @@map("tenants")
+}
+
+model User {
+  id                   String                    @id @default(cuid())
+  tenantId             String
+  email                String
+  passwordHash         String
+  name                 String
+  document             String?                   // CPF
+  phone                String?
+  roles                UserRole[]
+  status               UserStatus                @default(PENDING_CONFIRMATION)
+  emailConfirmed       Boolean                   @default(false)
+  failedLoginAttempts  Int                       @default(0)
+  lockedUntil          DateTime?
+  professionalInfo     ProfessionalInfo?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  tenant               Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessions             Session[]
+  invites              Invite[]                  @relation("InvitedBy")
+  acceptedInvites      Invite[]                  @relation("AcceptedBy")
+  consents             Consent[]
+  emailConfirmations   EmailConfirmationToken[]
+  passwordResets       PasswordResetToken[]
+  patientLinks         ProfessionalPatientLink[]
+  attendancesAsProf    Attendance[]              @relation("AttendanceProfessional")
+  agendas              Agenda[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, id])
+  @@index([tenantId, email])
+  @@map("users")
+}
+
+model ProfessionalInfo {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  specialty      String
+  registerNumber String?
+  registerType   String?  // CRM, CRP, CREFITO, OUTRO
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("professional_info")
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  street       String
+  number       String
+  complement   String?
+  neighborhood String?
+  city         String
+  state        String
+  zipCode      String
+  tenantId     String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("addresses")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, id])
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Invite {
+  id         String    @id @default(cuid())
+  tenantId   String
+  email      String
+  role       UserRole
+  invitedBy  String
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  acceptedBy String?
+  createdAt  DateTime  @default(now())
+
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  inviter    User      @relation("InvitedBy", fields: [invitedBy], references: [id])
+  accepter   User?     @relation("AcceptedBy", fields: [acceptedBy], references: [id])
+
+  @@unique([tenantId, email])
+  @@index([tenantId, id])
+  @@index([token])
+  @@map("invites")
+}
+
+model Consent {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String?
+  type       String   // LGPD, TERMS, PRIVACY
+  version    String
+  acceptedAt DateTime @default(now())
+  ipAddress  String?
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, id])
+  @@index([userId])
+  @@map("consents")
+}
+
+model EmailConfirmationToken {
+  id          String    @id @default(cuid())
+  userId      String
+  token       String    @unique
+  expiresAt   DateTime
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("email_confirmation_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+// ============================================================================
+// CLINICAL CONTEXT (F02 - Pacientes, F04 - Prontuario/Evolucao)
+// ============================================================================
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Patient {
+  id            String                    @id @default(cuid())
+  tenantId      String
+  name          String
+  email         String?
+  phone         String?
+  document      String?                   // CPF
+  birthDate     DateTime?
+  gender        String?
+  address       PatientAddress?
+  notes         String?
+  status        PatientStatus             @default(ACTIVE)
+  deletedAt     DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  professionalLinks ProfessionalPatientLink[]
+  attendances      Attendance[]
+  appointments     Appointment[]
+
+  @@unique([tenantId, document])
+  @@index([tenantId, id])
+  @@index([tenantId, document])
+  @@index([tenantId, name])
+  @@map("patients")
+}
+
+model PatientAddress {
+  id           String   @id @default(cuid())
+  patientId    String   @unique
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@map("patient_addresses")
+}
+
+model ProfessionalPatientLink {
+  id              String    @id @default(cuid())
+  tenantId        String
+  patientId       String
+  professionalId  String
+  fee             Float?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  patient         Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional    User      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, patientId, professionalId])
+  @@index([tenantId, id])
+  @@index([patientId])
+  @@index([professionalId])
+  @@map("professional_patient_links")
+}
+
+model Attendance {
+  id              String     @id @default(cuid())
+  tenantId        String
+  patientId       String
+  professionalId  String
+  appointmentId   String?    @unique
+  startAt         DateTime
+  endAt           DateTime?
+  status          String     @default("completed")
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  patient         Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professional    User       @relation("AttendanceProfessional", fields: [professionalId], references: [id], onDelete: Cascade)
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  evolution       Evolution?
+  receivable      Receivable?
+
+  @@index([tenantId, id])
+  @@index([tenantId, patientId])
+  @@index([tenantId, professionalId])
+  @@index([appointmentId])
+  @@map("attendances")
+}
+
+model Evolution {
+  id            String    @id @default(cuid())
+  attendanceId  String    @unique
+  content       String
+  diagnosis     String?
+  prescription  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  attendance    Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@map("evolutions")
+}
+
+// ============================================================================
+// SCHEDULING CONTEXT (F03 - Agendamento)
+// ============================================================================
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Agenda {
+  id             String   @id @default(cuid())
+  tenantId       String
+  professionalId String
+  name           String
+  color          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  professional   User     @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  appointments   Appointment[]
+
+  @@unique([tenantId, professionalId, name])
+  @@index([tenantId, id])
+  @@index([professionalId])
+  @@map("agendas")
+}
+
+model Appointment {
+  id             String           @id @default(cuid())
+  tenantId       String
+  agendaId       String?
+  patientId      String
+  professionalId String
+  startAt        DateTime
+  endAt          DateTime
+  status         AppointmentStatus @default(SCHEDULED)
+  notes          String?
+  deletedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  agenda         Agenda?          @relation(fields: [agendaId], references: [id], onDelete: SetNull)
+  patient        Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  attendance     Attendance?
+
+  @@index([tenantId, id])
+  @@index([tenantId, professionalId, startAt])
+  @@index([tenantId, patientId])
+  @@index([agendaId])
+  @@map("appointments")
+}
+
+// ============================================================================
+// BILLING CONTEXT (F05 - Contas a Receber, F06 - Recibos)
+// ============================================================================
+
+enum ReceivableStatus {
+  PENDING
+  PAID
+  CANCELLED
+  OVERDUE
+}
+
+model Receivable {
+  id            String          @id @default(cuid())
+  tenantId      String
+  attendanceId  String?         @unique
+  patientId     String
+  amount        Float
+  dueDate       DateTime?
+  paidAt        DateTime?
+  status        ReceivableStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  attendance    Attendance?     @relation(fields: [attendanceId], references: [id], onDelete: SetNull)
+  receipt       Receipt?
+
+  @@index([tenantId, id])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, status])
+  @@index([patientId])
+  @@map("receivables")
+}
+
+model Receipt {
+  id           String   @id @default(cuid())
+  tenantId     String
+  receivableId String   @unique
+  number       String   @unique
+  amount       Float
+  issuedAt     DateTime @default(now())
+  pdfUrl       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  receivable   Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, id])
+  @@index([number])
+  @@map("receipts")
+}
