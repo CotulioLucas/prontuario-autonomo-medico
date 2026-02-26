@@ -14,7 +14,7 @@
 | # | Task | Branch | PR URL | Status | Data | Commit |
 |---|---|---|---|---|---|---|
 | 1 | T1 | `feature/t1-create-mapper-file` | [PR #1](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/new/feature/t1-create-mapper-file) | ✅ Pronta para Merge | 2026-02-25 | `7dff3e9` |
-| 2 | T2 | `feature/t2-autonomous-mapper` | - | ⏳ | - | - |
+| 2 | T2 | `feature/t2-autonomous-mapper` | [PR #2](https://github.com/CotulioLucas/prontuario-autonomo-medico/pull/new/feature/t2-autonomous-mapper) | ✅ Pronta para Merge | 2026-02-25 | `7881aaa` |
 | 3 | T3 | `feature/t3-clinic-mapper` | - | ⏳ | - | - |
 | 4 | T4 | `feature/t4-update-api-auth` | - | ⏳ | - | - |
 | 5 | T5 | `feature/t5-autonomous-form` | - | ⏳ | - | - |
@@ -36,9 +36,9 @@
 ## Resumo
 
 - **Total de Tasks:** 17
-- **PRs Criadas:** 1/17 (5.8%)
+- **PRs Criadas:** 2/17 (11.8%)
 - **PRs Merged:** 0/17 (0%)
-- **PRs Prontas para Merge:** 1/17 (5.8%)
+- **PRs Prontas para Merge:** 2/17 (11.8%)
 
 ---
 
