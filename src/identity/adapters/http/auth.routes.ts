@@ -163,7 +163,8 @@ export async function authRoutes(fastify: FastifyInstance, config: AuthRoutesCon
         phone: string;
         cpf: string;
         password: string;
-        professionalInfo: { specialty: string; registerNumber?: string; registerType?: string };
+        address: { street: string; number: string; complement?: string; neighborhood: string; city: string; state: string; zipCode: string };
+        professionalInfo: { specialty: string; registerNumber?: string; registerType?: string; registerUf?: string };
         lgpdConsentVersion: string;
       };
 
@@ -176,16 +177,53 @@ export async function authRoutes(fastify: FastifyInstance, config: AuthRoutesCon
         });
       }
 
+      if (!body.address || !body.address.street || !body.address.city || !body.address.state || !body.address.zipCode) {
+        return reply.code(400).send({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Address with street, city, state, zipCode is required',
+          },
+        });
+      }
+
+      if (!body.professionalInfo || !body.professionalInfo.specialty || !body.professionalInfo.registerType) {
+        return reply.code(400).send({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Professional info incomplete',
+          },
+        });
+      }
+
+      if (!body.professionalInfo.registerUf) {
+        return reply.code(400).send({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Professional registration state (registerUf) is required',
+          },
+        });
+      }
+
       const result = await registerAutonomousUseCase.execute({
         name: body.name,
         email: body.email,
         phone: body.phone,
         cpf: body.cpf,
         password: body.password,
+        address: {
+          street: body.address.street,
+          number: body.address.number,
+          complement: body.address.complement,
+          neighborhood: body.address.neighborhood,
+          city: body.address.city,
+          state: body.address.state,
+          zipCode: body.address.zipCode,
+        },
         professionalInfo: {
           specialty: body.professionalInfo.specialty,
           registerNumber: body.professionalInfo.registerNumber,
           registerType: body.professionalInfo.registerType as 'CRM' | 'CRP' | 'CREFITO' | 'OUTRO' | undefined,
+          registerUf: body.professionalInfo.registerUf,
         },
         lgpdConsentVersion: body.lgpdConsentVersion,
       });
