@@ -235,6 +235,56 @@ export function transformAutonomousForm(
 export function transformClinicForm(
   formData: ClinicFormData
 ): ClinicRegistrationPayload {
-  // To be implemented in T3
-  throw new Error("transformClinicForm not yet implemented");
+  // Build address object, omitting complement if empty
+  const addressPayload: ClinicRegistrationPayload["address"] = {
+    street: formData.endereco.rua,
+    number: formData.endereco.numero,
+    neighborhood: formData.endereco.bairro,
+    city: formData.endereco.cidade,
+    state: formData.endereco.uf,
+    zipCode: formData.endereco.cep,
+  };
+
+  // Include complement only if it has a value
+  if (formData.endereco.complemento && formData.endereco.complemento.trim()) {
+    addressPayload.complement = formData.endereco.complemento;
+  }
+
+  // Build base payload
+  const payload: ClinicRegistrationPayload = {
+    companyName: formData.razaoSocial,
+    cnpj: formData.cnpj,
+    address: addressPayload,
+    adminName: formData.admin.nome,
+    adminEmail: formData.admin.email,
+    adminPassword: formData.admin.senha,
+    lgpdConsentVersion: "1.0",
+  };
+
+  // Include customization only if provided and has at least one field
+  if (formData.personalizacao) {
+    const customization: ClinicRegistrationPayload["customization"] = {};
+    let hasCustomizationFields = false;
+
+    if (formData.personalizacao.logoUrl) {
+      customization.logoUrl = formData.personalizacao.logoUrl;
+      hasCustomizationFields = true;
+    }
+
+    if (formData.personalizacao.corPrimaria) {
+      customization.primaryColor = formData.personalizacao.corPrimaria;
+      hasCustomizationFields = true;
+    }
+
+    if (formData.personalizacao.corSecundaria) {
+      customization.secondaryColor = formData.personalizacao.corSecundaria;
+      hasCustomizationFields = true;
+    }
+
+    if (hasCustomizationFields) {
+      payload.customization = customization;
+    }
+  }
+
+  return payload;
 }
